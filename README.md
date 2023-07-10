@@ -8,3 +8,9 @@ OSIO由多个微服务程序组成，如果您要查找单个组件，则可访�
 - [osio-oauth](https://github.com/lgfei/osio-oauth) - 授权管理，基于 Spring Security、Spring OAuth2、JWT 实现的统一认证服务中心，登录基于 spring security 的标准登录流程。
 - [osio-admin](https://github.com/lgfei/osio-admin) - 服务治理，基于 Spring Boot Admin实现的服务状态监控，基础配置。
 - [osio-file](https://github.com/lgfei/osio-file) - 文件管理服务，提供简单易用的文件存储功能，具备对接多种云对象存储服务的能力且易于拓展，同时支持服务器ftp协议文件上传。
+
+## 组件依赖
+| 组件 | 描述 | 版本 |
+| :--- | :--- | :--- |
+| JDK | Java运行环境 | 17.0.7 |
+| Maven | 项目构建 | 3.6.0 |
