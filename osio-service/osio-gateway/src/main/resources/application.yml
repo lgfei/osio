@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: osio-gateway
+  main:
+    #因为Gateway不支持SpringMVC，所以要么加上这个配置，要么pom.xml注释掉spring-boot-starter-web
+    #web-application-type: reactive
+    allow-bean-definition-overriding: true
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          jwk-set-uri: http://osio-api-dev.lgfei.com/auth/oauth2/jwks
+          issuer-uri: http://osio-api-dev.lgfei.com/auth
+  data:
+    redis:
+      host: 10.10.216.95
+      port: 6379
+      database: 1
+      #password: 123456
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+  cloud:
+    gateway:
+      default-filters:
+        - AddRequestHeader=Access-Control-Allow-Origin, *
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - AddResponseHeader=Access-Control-Allow-Origin, *
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowCredentials: true
+            #allowedOrigins: "*"
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            allowedHeaders: "*"
+        add-to-simple-url-handler-mapping: true
+      routes:
+        - id: osio-admin
+          uri: lb://osio-admin
+          predicates:
+            - Path=/admin/**
+          filters:
+            - StripPrefix=1
+        - id: osio-portal
+          uri: lb://osio-portal
+          predicates:
+            - Path=/portal/**
+          filters:
+            - StripPrefix=1
+        - id: osio-auth
+          uri: lb://osio-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: osio-iam
+          uri: lb://osio-iam
+          predicates:
+            - Path=/iam/**
+          filters:
+            - StripPrefix=1
+        - id: osio-file
+          uri: lb://osio-file
+          predicates:
+            - Path=/file/**
+          filters:
+            - StripPrefix=1
+
+osio:
+  gateway-url: http://osio-api-dev.lgfei.com

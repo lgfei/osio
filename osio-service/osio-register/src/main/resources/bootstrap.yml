@@ -1,0 +1,48 @@
+server:
+  port: 7001
+management:
+  server:
+    port: 8001
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    jmx: 
+      exposure: 
+        include: "*"
+    web: 
+      exposure: 
+        include: "*"
+  info:
+    env:
+      enabled: true
+
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 2
+    leaseExpirationDurationInSeconds: 4
+    metadata-map:
+      VERSION: 0.0.1-SNAPSHOT
+  client:
+    # 检索服务选项，注册中心不需要检索服务
+    fetch-registry: ${EUREKA_CLIENT_FETCH_REGISTRY:false}
+    # 注册中心将自己作为客户端来尝试注册自己，注册中心集群环境下需开启此配置
+    register-with-eureka: ${EUREKA_CLIENT_REGISTER_WITH_EUREKA:false}
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://osio-eureka-dev.lgfei.com/eureka}
+    registryFetchIntervalSeconds: 10
+    disable-delta: true
+  server:
+    # 清除失效服务间隔时间
+    evictionIntervalTimerInMs: 3000
+    enable-self-preservation: ${EUREKA_SERVER_ENABLE_SELF_PRESERVATION:false}
+    # 响应数据缓存有效期
+    response-cache-update-interval-ms: 3000
+    response-cache-auto-expiration-in-seconds: 180
+
+spring:
+  boot:
+    admin:
+      client:
+        url: http://osio-admin-dev.lgfei.com

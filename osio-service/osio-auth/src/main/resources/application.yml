@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: osio-auth
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    encoding: UTF-8
+    suffix: .html
+    mode: HTML
+  security:
+    oauth2:
+      client:
+        registration:
+          github-idp:
+            provider: github
+            client-id: 76c66047040c2f28055e
+            client-secret: 315613192d7a28564ca181e4ee1a9e956114f4f9
+            scope: user:email, read:user
+            client-name: Sign in with GitHub
+        provider:
+          github:
+            user-name-attribute: login
+osio:
+  gateway-url: http://osio-api-dev.lgfei.com
+

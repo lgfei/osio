@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: osio-file
+
+example:
+  what: osio starter core is work
