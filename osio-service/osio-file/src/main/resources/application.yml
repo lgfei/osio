@@ -3,4 +3,4 @@ spring:
     name: osio-file
 
 example:
-  what: this is osio file service
+  what: osio file service is working

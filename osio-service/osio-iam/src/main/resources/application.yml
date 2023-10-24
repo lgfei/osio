@@ -3,4 +3,4 @@ spring:
     name: osio-iam
 
 example:
-  what: this is osio iam service
+  what: osio iam service is working
