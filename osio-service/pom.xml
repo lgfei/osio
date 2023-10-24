@@ -7,6 +7,7 @@
         <groupId>com.lgfei.osio</groupId>
         <artifactId>osio-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../osio-parent/pom.xml</relativePath>
     </parent>
 
     <groupId>com.lgfei.osio</groupId>

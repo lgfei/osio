@@ -50,12 +50,6 @@ spring:
             - Path=/admin/**
           filters:
             - StripPrefix=1
-        - id: osio-portal
-          uri: lb://osio-portal
-          predicates:
-            - Path=/portal/**
-          filters:
-            - StripPrefix=1
         - id: osio-auth
           uri: lb://osio-auth
           predicates:
