@@ -34,11 +34,12 @@ public class SecurityConfig {
                                 "/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults())
-                //.formLogin(formLogin -> formLogin
-                //        .loginPage(osioService.getGatewayUrl() + "/auth/login")
-                //        .permitAll()
-                //)
+                //.formLogin(withDefaults())
+                .formLogin(formLogin -> formLogin
+                        .loginPage(osioService.getGatewayUrl() + "/auth/login")
+                        .defaultSuccessUrl(osioService.getGatewayUrl() + "/auth/home")
+                        .permitAll()
+                )
                 .csrf().disable().build();
     }
 

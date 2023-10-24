@@ -14,8 +14,11 @@ import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @Configuration
 public class ResourceServerConfig {
@@ -37,9 +40,12 @@ public class ResourceServerConfig {
                         //.jwtDecoder(JwtDecoders.fromIssuerLocation(issuerUri))
                 ));
         http.authorizeExchange()
-                .pathMatchers("/actuator/**","/auth/**").permitAll()
+                .pathMatchers("/actuator/**","/auth/**", "/favicon.ico").permitAll()
                 .anyExchange().access(osioAuthorizationManager);
         http.oauth2Login(Customizer.withDefaults());
+        //http.oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+        //        .authorizationRedirectStrategy("")
+        //);
         return http.csrf().disable().build();
     }
 

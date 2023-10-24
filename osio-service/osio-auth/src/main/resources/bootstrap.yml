@@ -43,7 +43,7 @@ logging:
   level:
     com:
       netflix:
-        discovery: INFO
+        discovery: ERROR
     org:
       springframework:
         security:
