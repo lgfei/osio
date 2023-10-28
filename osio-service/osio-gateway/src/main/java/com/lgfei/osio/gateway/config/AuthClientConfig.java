@@ -45,7 +45,7 @@ public class AuthClientConfig {
         return CommonOAuth2Provider.GITHUB.getBuilder("github")
                 .clientId("76c66047040c2f28055e")
                 .clientSecret("315613192d7a28564ca181e4ee1a9e956114f4f9")
-                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/github")
+                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/{registrationId}")
                 .build();
     }
 
@@ -53,10 +53,10 @@ public class AuthClientConfig {
         return ClientRegistration.withRegistrationId("osio")
                 .clientId("osio-client-id")
                 .clientSecret("osio-client-secret")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/osio")
-                .scope("all")
                 .clientName("osio-client-name")
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .scope("all")
+                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/{registrationId}")
                 .authorizationUri(osioService.getGatewayUrl() + "/auth/oauth2/authorize")
                 .tokenUri(osioService.getGatewayUrl() + "/auth/oauth2/token")
                 .jwkSetUri(osioService.getGatewayUrl() + "/auth/oauth2/jwks")

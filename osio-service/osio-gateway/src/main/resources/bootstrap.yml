@@ -49,5 +49,4 @@ logging:
         discovery: ERROR
     org:
       springframework:
-        security:
-          oauth2: TRACE
+        security: TRACE

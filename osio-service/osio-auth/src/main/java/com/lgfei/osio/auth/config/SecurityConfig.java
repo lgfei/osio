@@ -31,12 +31,15 @@ public class SecurityConfig {
                                 "/assets/**",
                                 "/webjars/**",
                                 "/oauth2/**",
-                                "/login").permitAll()
-                        .anyRequest().authenticated()
+                                "/login",
+                                "/doLogin").permitAll()
+                        //.anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 //.formLogin(withDefaults())
                 .formLogin(formLogin -> formLogin
                         .loginPage(osioService.getGatewayUrl() + "/auth/login")
+                        .loginProcessingUrl(osioService.getGatewayUrl() + "/auth/doLogin")
                         .defaultSuccessUrl(osioService.getGatewayUrl() + "/auth/home")
                         .permitAll()
                 )

@@ -51,7 +51,7 @@ public class AuthServerConfig {
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());	// Enable OpenID Connect 1.0
         http.exceptionHandling(exceptions ->
-                        exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                        exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(osioService.getGatewayUrl() + "/auth/login"))
                 )
                 .oauth2Login(Customizer.withDefaults())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
@@ -65,17 +65,18 @@ public class AuthServerConfig {
                 .withId("osio")
                 .clientId("osio-client-id")
                 .clientSecret("osio-client-secret")
+                .clientName("osio-client-name")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri(osioService.getGatewayUrl() + "/auth/login/oauth2/code/osio-client-id")
-                .redirectUri(osioService.getGatewayUrl() + "/auth/authorized")
-                .scope(OidcScopes.OPENID)
-                .scope(OidcScopes.PROFILE)
-                .scope("message.read")
-                .scope("message.write")
+                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/osio")
+                //.scope(OidcScopes.OPENID)
+                //.scope(OidcScopes.PROFILE)
+                //.scope("message.read")
+                //.scope("message.write")
+                .scope("all")
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .build();
 
