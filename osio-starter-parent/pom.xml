@@ -9,7 +9,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.lgfei.osio</groupId>
     <artifactId>osio-starter-parent</artifactId>
     <packaging>pom</packaging>
 

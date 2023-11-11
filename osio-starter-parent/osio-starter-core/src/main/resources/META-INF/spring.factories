@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.lgfei.osio.starter.core.config.ExampleConfig,\
+  com.lgfei.osio.starter.core.config.OsioConfig

@@ -10,7 +10,6 @@
         <relativePath>../osio-parent/pom.xml</relativePath>
     </parent>
 
-    <groupId>com.lgfei.osio</groupId>
     <artifactId>osio-service</artifactId>
     <packaging>pom</packaging>
 
@@ -36,12 +35,8 @@
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
+            <version>3.0.1</version>
         </dependency>
 
         <dependency>

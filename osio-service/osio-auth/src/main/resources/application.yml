@@ -22,4 +22,5 @@ spring:
             user-name-attribute: login
 osio:
   gateway-url: http://osio-api-dev.lgfei.com
+  route-path: /auth
 

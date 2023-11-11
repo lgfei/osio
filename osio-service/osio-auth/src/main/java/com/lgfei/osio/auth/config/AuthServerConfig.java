@@ -1,126 +1,91 @@
 package com.lgfei.osio.auth.config;
 
-import com.lgfei.osio.auth.infra.util.RSAKeyUtil;
 import com.lgfei.osio.starter.core.service.OsioService;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
+import org.springframework.security.oauth2.provider.code.InMemoryAuthorizationCodeServices;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
-@Configuration(proxyBeanMethods = false)
-public class AuthServerConfig {
+@Configuration
+public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private OsioService osioService;
+    private final OsioService osioService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final TokenStore tokenStore;
+    private final ClientDetailsService clientDetailsService;
+    private final JwtAccessTokenConverter accessTokenEnhancer;
 
-    public AuthServerConfig(OsioService osioService){
+    public AuthServerConfig(OsioService osioService,
+                            PasswordEncoder passwordEncoder,
+                            AuthenticationManager authenticationManager,
+                            UserDetailsService userDetailsService,
+                            TokenStore tokenStore,
+                            ClientDetailsService clientDetailsService,
+                            JwtAccessTokenConverter accessTokenEnhancer)
+    {
         this.osioService = osioService;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
+        this.tokenStore = tokenStore;
+        this.clientDetailsService = clientDetailsService;
+        this.accessTokenEnhancer = accessTokenEnhancer;
     }
 
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .oidc(Customizer.withDefaults());	// Enable OpenID Connect 1.0
-        http.exceptionHandling(exceptions ->
-                        exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(osioService.getGatewayUrl() + "/auth/login"))
-                )
-                .oauth2Login(Customizer.withDefaults())
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
-        return http.csrf().disable().build();
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) {
+        security.tokenKeyAccess("permitAll()")
+                .checkTokenAccess("permitAll()")
+                .passwordEncoder(passwordEncoder)
+                .allowFormAuthenticationForClients();
     }
 
-    @Bean
-    public RegisteredClientRepository registeredClientRepository() {
-        RegisteredClient osioRegisteredClient = RegisteredClient
-                //.withId(UUID.randomUUID().toString())
-                .withId("osio")
-                .clientId("osio-client-id")
-                .clientSecret("osio-client-secret")
-                .clientName("osio-client-name")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri(osioService.getGatewayUrl() + "/login/oauth2/code/osio")
-                //.scope(OidcScopes.OPENID)
-                //.scope(OidcScopes.PROFILE)
-                //.scope("message.read")
-                //.scope("message.write")
-                .scope("all")
-                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-                .build();
-
-        RegisteredClientRepository registeredClientRepository =
-                new InMemoryRegisteredClientRepository(osioRegisteredClient);
-
-        return registeredClientRepository;
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.inMemory()
+                .withClient("osio-client-id")
+                .secret(passwordEncoder.encode("osio-client-secret"))
+                .resourceIds("order")
+                .authorizedGrantTypes("authorization_code", "password", "client_credentials", "implicit", "refresh_token")
+                .scopes("all")
+                .autoApprove(false)
+                .redirectUris(osioService.getBaseUrl() + "/home");
     }
 
-    @Bean
-    public OAuth2AuthorizationService authorizationService(RegisteredClientRepository registeredClientRepository) {
-        OAuth2Authorization oAuth2Authorization = OAuth2Authorization
-                .withRegisteredClient(registeredClientRepository.findById("osio"))
-                .principalName("name")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .build();
-        return new InMemoryOAuth2AuthorizationService(oAuth2Authorization);
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints.authenticationManager(authenticationManager)
+                .tokenServices(tokenServices())
+                .userDetailsService(userDetailsService)
+                .authorizationCodeServices(authorizationCodeServices())
+                .allowedTokenEndpointRequestMethods(HttpMethod.POST);
     }
 
-    @Bean
-    public OAuth2AuthorizationConsentService authorizationConsentService(RegisteredClientRepository registeredClientRepository) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("USER");
-        OAuth2AuthorizationConsent oAuth2AuthorizationConsent = OAuth2AuthorizationConsent
-                .withId("osio-client-id", "name")
-                .authority(grantedAuthority)
-                .build();
-        return new InMemoryOAuth2AuthorizationConsentService(oAuth2AuthorizationConsent);
+    AuthorizationServerTokenServices tokenServices() {
+        DefaultTokenServices tokenServices = new DefaultTokenServices();
+        tokenServices.setClientDetailsService(clientDetailsService);
+        tokenServices.setTokenStore(tokenStore);
+        tokenServices.setTokenEnhancer(accessTokenEnhancer);
+        tokenServices.setSupportRefreshToken(true);
+        return tokenServices;
     }
 
-    @Bean
-    public JWKSource<SecurityContext> jwkSource() {
-        RSAKey rsaKey = RSAKeyUtil.generateRsa();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    AuthorizationCodeServices authorizationCodeServices() {
+        return new InMemoryAuthorizationCodeServices();
     }
-
-    @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
-    }
-
-    @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
-    }
-
 }
