@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,19 +18,23 @@ import java.util.Set;
 @RequestMapping("/public")
 @SessionAttributes("authorizationRequest")
 public class PublicController {
-    private OsioService osioService;
+    private final OsioService osioService;
+
 
     public PublicController(OsioService osioService){
         this.osioService = osioService;
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "login";
+    public ModelAndView login() {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("clientId", "osio-client-id");
+        modelAndView.setViewName("login");
+        return modelAndView;
     }
 
     @GetMapping("/confirm_access")
-    public ModelAndView confirmAccess(HttpServletRequest request, Map<String, Object> model) {
+    public ModelAndView confirmAccess(Map<String, Object> model) {
         AuthorizationRequest authorizationRequest = (AuthorizationRequest) model.get("authorizationRequest");
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("clientId", authorizationRequest.getClientId());

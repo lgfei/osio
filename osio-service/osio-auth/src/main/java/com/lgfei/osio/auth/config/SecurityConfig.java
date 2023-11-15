@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -29,9 +30,12 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final OsioService osioService;
+    private final ClientDetailsService clientDetailsService;
 
-    public SecurityConfig(OsioService osioService){
+    public SecurityConfig(OsioService osioService,
+                          ClientDetailsService clientDetailsService){
         this.osioService = osioService;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @Bean
@@ -70,6 +74,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout()
                 .deleteCookies("JSESSIONID")
                 .and()
+                //.oauth2Login()
+                //.loginPage(osioService.getBaseUrl() + "/public/login")
+                //.and()
                 .csrf().disable();
     }
 
@@ -78,7 +85,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         OsioAuthenticationFilter osioAuthenticationFilter = new OsioAuthenticationFilter();
         osioAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());
         osioAuthenticationFilter.setAuthenticationFailureHandler(new OsioAuthenticationFailureHandler(osioService));
-        osioAuthenticationFilter.setAuthenticationSuccessHandler(new OsioAuthenticationSuccessHandler(osioService));
+        osioAuthenticationFilter.setAuthenticationSuccessHandler(new OsioAuthenticationSuccessHandler(osioService, clientDetailsService));
         osioAuthenticationFilter.setFilterProcessesUrl("/public/doLogin");
         //osioAuthenticationFilter.setRememberMeServices(rememberMeServices()); //设置记住我
         //osioAuthenticationFilter.setUsernameParameter("id");

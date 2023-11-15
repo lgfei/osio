@@ -3,6 +3,8 @@ package com.lgfei.osio.auth.customsize;
 import com.lgfei.osio.starter.core.service.OsioService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,14 +15,23 @@ import java.io.IOException;
 public class OsioAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final OsioService osioService;
+    private final ClientDetailsService clientDetailsService;
 
-    public OsioAuthenticationSuccessHandler(OsioService osioService){
+    public OsioAuthenticationSuccessHandler(OsioService osioService,
+                                            ClientDetailsService clientDetailsService){
         this.osioService = osioService;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        //response.sendRedirect(osioService.getBaseUrl() + "/home");
-        response.sendRedirect(osioService.getBaseUrl() + "/oauth/authorize?response_type=code&client_id=osio-client-id&scope=all&redirect_uri=http://osio-api-dev.lgfei.com/auth/home");
+        String clientId = request.getParameter("clientId");
+        ClientDetails clientDetails = clientDetailsService.loadClientByClientId(clientId);
+        String redirectUrl = osioService.getBaseUrl()
+                + "/oauth/authorize?response_type=code"
+                + "&client_id=" + clientDetails.getClientId()
+                + "&scope=" + clientDetails.getScope().iterator().next()
+                + "&redirect_uri=" + clientDetails.getRegisteredRedirectUri().iterator().next();
+        response.sendRedirect(redirectUrl);
     }
 }
