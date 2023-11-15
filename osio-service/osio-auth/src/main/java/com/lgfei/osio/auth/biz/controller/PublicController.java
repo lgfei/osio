@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,9 +29,11 @@ public class PublicController {
     }
 
     @GetMapping("/login")
-    public ModelAndView login() {
+    public ModelAndView login(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("clientId", "osio-client-id");
+        String message = request.getParameter("message");
+        modelAndView.addObject("message", message);
         modelAndView.setViewName("login");
         return modelAndView;
     }

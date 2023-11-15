@@ -17,6 +17,6 @@ public class OsioLogoutSuccessHandler implements LogoutSuccessHandler {
     }
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        response.sendRedirect(osioService.getBaseUrl() + "/public/login");
+        response.sendRedirect(osioService.getBaseUrl() + "/public/login" + "?logout=success");
     }
 }
