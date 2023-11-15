@@ -1,4 +1,4 @@
-package com.lgfei.osio.auth.config;
+package com.lgfei.osio.auth.customsize;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

@@ -3,7 +3,7 @@ spring:
     name: osio-auth
   thymeleaf:
     cache: false
-    prefix: classpath:/templates/
+    prefix: classpath:/static/
     encoding: UTF-8
     suffix: .html
     mode: HTML

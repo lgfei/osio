@@ -1,5 +1,11 @@
 package com.lgfei.osio.auth.config;
 
+import com.lgfei.osio.auth.customsize.OsioAuthenticationFailureHandler;
+import com.lgfei.osio.auth.customsize.OsioAuthenticationFilter;
+import com.lgfei.osio.auth.customsize.OsioAuthenticationSuccessHandler;
+import com.lgfei.osio.auth.customsize.OsioLogoutFilter;
+import com.lgfei.osio.auth.customsize.OsioLogoutHandler;
+import com.lgfei.osio.auth.customsize.OsioLogoutSuccessHandler;
 import com.lgfei.osio.starter.core.service.OsioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +19,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -58,6 +67,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .loginPage(osioService.getBaseUrl() + "/public/login")
                 .and()
+                .logout()
+                .deleteCookies("JSESSIONID")
+                .and()
                 .csrf().disable();
     }
 
@@ -72,5 +84,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //osioAuthenticationFilter.setUsernameParameter("id");
         //osioAuthenticationFilter.setPasswordParameter("password");
         return osioAuthenticationFilter;
+    }
+
+    @Bean
+    public LogoutFilter osioLogoutFilter() {
+        OsioLogoutFilter osioLogoutFilter = new OsioLogoutFilter(osioLogoutSuccessHandler(), osioLogoutHandler());
+        osioLogoutFilter.setFilterProcessesUrl("/public/doLogout");
+        return osioLogoutFilter;
+    }
+
+    @Bean
+    public LogoutSuccessHandler osioLogoutSuccessHandler(){
+        return new OsioLogoutSuccessHandler(osioService);
+    }
+
+    @Bean
+    public LogoutHandler osioLogoutHandler(){
+        return new OsioLogoutHandler();
     }
 }

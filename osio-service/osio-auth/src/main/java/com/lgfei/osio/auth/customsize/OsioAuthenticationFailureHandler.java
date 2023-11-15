@@ -1,4 +1,4 @@
-package com.lgfei.osio.auth.config;
+package com.lgfei.osio.auth.customsize;
 
 import com.lgfei.osio.starter.core.service.OsioService;
 import lombok.extern.slf4j.Slf4j;

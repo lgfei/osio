@@ -73,7 +73,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .tokenServices(tokenServices())
                 .userDetailsService(userDetailsService)
                 .authorizationCodeServices(authorizationCodeServices())
-                .allowedTokenEndpointRequestMethods(HttpMethod.POST);
+                .allowedTokenEndpointRequestMethods(HttpMethod.POST)
+                .pathMapping("/oauth/confirm_access","/public/confirm_access")
+        ;
     }
 
     AuthorizationServerTokenServices tokenServices() {
