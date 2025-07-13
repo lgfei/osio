@@ -2,5 +2,9 @@ spring:
   application:
     name: osio-iam
 
+osio:
+  gateway-url: http://osio-api-dev.lgfei.com
+  route-path: /iam
+
 example:
   what: osio iam service is working

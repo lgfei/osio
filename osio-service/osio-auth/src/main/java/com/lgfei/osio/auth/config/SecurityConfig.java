@@ -1,59 +1,112 @@
 package com.lgfei.osio.auth.config;
 
+import com.lgfei.osio.auth.customsize.OsioAuthenticationFailureHandler;
+import com.lgfei.osio.auth.customsize.OsioAuthenticationFilter;
+import com.lgfei.osio.auth.customsize.OsioAuthenticationSuccessHandler;
+import com.lgfei.osio.auth.customsize.OsioLogoutFilter;
+import com.lgfei.osio.auth.customsize.OsioLogoutHandler;
+import com.lgfei.osio.auth.customsize.OsioLogoutSuccessHandler;
 import com.lgfei.osio.starter.core.service.OsioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
+@Configuration
 @EnableWebSecurity
-@Configuration(proxyBeanMethods = false)
-public class SecurityConfig {
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private OsioService osioService;
+    private final OsioService osioService;
+    private final ClientDetailsService clientDetailsService;
 
-    public SecurityConfig(OsioService osioService){
+    public SecurityConfig(OsioService osioService,
+                          ClientDetailsService clientDetailsService){
         this.osioService = osioService;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @Bean
-    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/actuator/**",
-                                "/assets/**",
-                                "/webjars/**",
-                                "/oauth2/**",
-                                "/login",
-                                "/doLogin").permitAll()
-                        //.anyRequest().authenticated()
-                        .anyRequest().permitAll()
-                )
-                //.formLogin(withDefaults())
-                .formLogin(formLogin -> formLogin
-                        .loginPage(osioService.getGatewayUrl() + "/auth/login")
-                        .loginProcessingUrl(osioService.getGatewayUrl() + "/auth/doLogin")
-                        .defaultSuccessUrl(osioService.getGatewayUrl() + "/auth/home")
-                        .permitAll()
-                )
-                .csrf().disable().build();
+    @Override
+    protected UserDetailsService userDetailsService() {
+        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+        manager.createUser(User.withUsername("root").password(passwordEncoder().encode("123456")).authorities("ROOT").build());
+        manager.createUser(User.withUsername("manager").password(passwordEncoder().encode("123456")).authorities("MANAGER").build());
+        manager.createUser(User.withUsername("user").password(passwordEncoder().encode("123456")).authorities("USER").build());
+
+        return manager;
     }
 
     @Bean
-    UserDetailsService users() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("test")
-                .password("test")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
+    PasswordEncoder passwordEncoder() {
+        //return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .antMatchers("/actuator/**","/assets/**","/webjars/**","/oauth/**","/public/**")
+                .permitAll()
+                //.anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage(osioService.getBaseUrl() + "/public/login")
+                .and()
+                .logout()
+                .deleteCookies("JSESSIONID")
+                .and()
+                //.oauth2Login()
+                //.loginPage(osioService.getBaseUrl() + "/public/login")
+                //.and()
+                .csrf().disable();
+    }
+
+    @Bean
+    public OsioAuthenticationFilter osioAuthenticationFilter() throws Exception {
+        OsioAuthenticationFilter osioAuthenticationFilter = new OsioAuthenticationFilter();
+        osioAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());
+        osioAuthenticationFilter.setAuthenticationFailureHandler(new OsioAuthenticationFailureHandler(osioService));
+        osioAuthenticationFilter.setAuthenticationSuccessHandler(new OsioAuthenticationSuccessHandler(osioService, clientDetailsService));
+        osioAuthenticationFilter.setFilterProcessesUrl("/public/doLogin");
+        //osioAuthenticationFilter.setRememberMeServices(rememberMeServices()); //设置记住我
+        //osioAuthenticationFilter.setUsernameParameter("id");
+        //osioAuthenticationFilter.setPasswordParameter("password");
+        return osioAuthenticationFilter;
+    }
+
+    @Bean
+    public LogoutFilter osioLogoutFilter() {
+        OsioLogoutFilter osioLogoutFilter = new OsioLogoutFilter(osioLogoutSuccessHandler(), osioLogoutHandler());
+        osioLogoutFilter.setFilterProcessesUrl("/public/doLogout");
+        return osioLogoutFilter;
+    }
+
+    @Bean
+    public LogoutSuccessHandler osioLogoutSuccessHandler(){
+        return new OsioLogoutSuccessHandler(osioService);
+    }
+
+    @Bean
+    public LogoutHandler osioLogoutHandler(){
+        return new OsioLogoutHandler();
+    }
 }

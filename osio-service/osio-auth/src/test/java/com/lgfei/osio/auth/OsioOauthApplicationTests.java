@@ -1,6 +1,6 @@
-package com.lgfei.osio.oauth;
+package com.lgfei.osio.auth;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest

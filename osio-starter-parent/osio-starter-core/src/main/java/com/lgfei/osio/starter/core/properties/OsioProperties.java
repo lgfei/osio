@@ -12,4 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class OsioProperties {
 
     private String gatewayUrl;
+    private String routePath;
 }
