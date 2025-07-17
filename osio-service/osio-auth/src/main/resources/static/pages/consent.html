@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Consent Page</title>
+</head>
+<body>
+<div class="container">
+    <form th:action="@{/oauth2/authorize}" method="post">
+        <input type="hidden" name="client_id" th:value="${clientId}" />
+        <input type="hidden" name="state" th:value="${state}" />
+
+        <div th:each="scope : ${scopes}">
+            <label>
+                <input type="checkbox" th:name="scope" th:value="${scope}" checked="checked"/>
+                <span th:text="${scope}"></span>
+            </label>
+        </div>
+
+        <button type="submit">Approve</button>
+    </form>
+
+    <form th:action="@{/oauth2/authorize}" method="post">
+        <input type="hidden" name="client_id" th:value="${clientId}" />
+        <input type="hidden" name="state" th:value="${state}" />
+        <button type="submit" name="scope.denied" value="true">Deny</button>
+    </form>
+</div>
+</body>
+</html>

@@ -13,7 +13,7 @@ import java.net.UnknownHostException;
 @RequestMapping("/example")
 public class ExampleController {
 
-    private ExampleService exampleService;
+    private final ExampleService exampleService;
 
     public ExampleController(ExampleService exampleService){
         this.exampleService = exampleService;

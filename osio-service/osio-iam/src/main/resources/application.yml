@@ -1,6 +1,12 @@
 spring:
   application:
     name: osio-iam
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://osio-auth-dev.lgfei.com
+          jwk-set-uri: http://osio-auth-dev.lgfei.com/oauth2/jwks
 
 osio:
   gateway-url: http://osio-api-dev.lgfei.com

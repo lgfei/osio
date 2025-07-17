@@ -1,4 +1,4 @@
-package com.lgfei.osio.iam.config;
+package com.lgfei.osio.file.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -27,7 +27,7 @@ eureka:
     leaseExpirationDurationInSeconds: 9
     # 服务的一些元数据信息
     metadata-map:
-      VERSION: 0.0.1-SNAPSHOT
+      VERSION: 0.1.0-SNAPSHOT
   client:
     serviceUrl:
       # 注册中心地址
@@ -41,13 +41,3 @@ spring:
     admin:
       client:
         url: http://osio-admin-dev.lgfei.com
-
-logging:
-  level:
-    com:
-      netflix:
-        discovery: ERROR
-    org:
-      springframework:
-        cloud:
-          gateway: TRACE

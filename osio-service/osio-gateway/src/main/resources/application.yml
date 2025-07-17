@@ -7,28 +7,34 @@ spring:
     allow-bean-definition-overriding: true
   security:
     oauth2:
-      resource-server:
-        jwt:
-          jwk-set-uri: http://osio-api-dev.lgfei.com/auth/oauth2/jwks
-          issuer-uri: http://osio-api-dev.lgfei.com/auth
-  redis:
-    host: 10.10.216.95
-    port: 6379
-    database: 1
-    #password: 123456
-    timeout: 3000ms
-    lettuce:
-      pool:
-        max-active: 20
-        max-wait: -1
-        max-idle: 8
-        min-idle: 0
+      client:
+        registration:
+          my-client:
+            client-id: my-client
+            client-secret: my-secret
+            authorization-grant-type: authorization_code
+            #redirect-uri: http://osio-api-dev.lgfei.com/login/oauth2/code/my-client
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+            provider: spring-authorization-server
+        provider:
+          spring-authorization-server:
+            authorization-uri: http://osio-auth-dev.lgfei.com/oauth2/authorize
+            token-uri: http://osio-auth-dev.lgfei.com/oauth2/token
+            jwk-set-uri: http://osio-auth-dev.lgfei.com/oauth2/jwks
+            issuer-uri: http://osio-auth-dev.lgfei.com
+            user-info-uri: http://osio-auth-dev.lgfei.com/userinfo
+            user-name-attribute: sub
   cloud:
     gateway:
       default-filters:
         - AddRequestHeader=Access-Control-Allow-Origin, *
         #- DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
         - AddResponseHeader=Access-Control-Allow-Origin, *
+        - PreserveHostHeader
+        - TokenRelay
       globalcors:
         cors-configurations:
           '[/**]':
@@ -51,12 +57,12 @@ spring:
           filters:
             - StripPrefix=1
         # /auth
-        - id: osio-auth
-          uri: lb://osio-auth
-          predicates:
-            - Path=/auth/**
-          filters:
-            - StripPrefix=1
+        #- id: osio-auth
+        #  uri: lb://osio-auth
+        #  predicates:
+        #    - Path=/auth/**
+        #  filters:
+        #    - StripPrefix=1
         # /iam
         - id: osio-iam
           uri: lb://osio-iam
@@ -71,6 +77,20 @@ spring:
             - Path=/file/**
           filters:
             - StripPrefix=1
+  data:
+    redis:
+      host: 10.10.219.168
+      port: 6379
+      #password: 123456
+      database: 1
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+
 
 osio:
   gateway-url: http://osio-api-dev.lgfei.com

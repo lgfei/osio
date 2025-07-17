@@ -1,5 +1,6 @@
 server:
   port: 7004
+  forward-headers-strategy: framework
 management:
   server:
     port: 8004
@@ -24,7 +25,7 @@ eureka:
     leaseExpirationDurationInSeconds: 9
     # 服务的一些元数据信息
     metadata-map:
-      VERSION: 0.0.1-SNAPSHOT
+      VERSION: 0.1.0-SNAPSHOT
   client:
     serviceUrl:
       # 注册中心地址

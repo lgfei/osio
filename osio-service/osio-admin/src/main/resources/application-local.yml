@@ -1,0 +1,11 @@
+logging:
+  level:
+    root: info
+    com:
+      netflix:
+        discovery: error
+    org:
+      springframework:
+        web: warn
+    de:
+      codecentric: debug

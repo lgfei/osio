@@ -1,93 +1,55 @@
 package com.lgfei.osio.auth.config;
 
-import com.lgfei.osio.starter.core.service.OsioService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
-import org.springframework.security.oauth2.provider.code.InMemoryAuthorizationCodeServices;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 @Configuration
-public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
+public class AuthServerConfig {
 
-    private final OsioService osioService;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
-    private final TokenStore tokenStore;
-    private final ClientDetailsService clientDetailsService;
-    private final JwtAccessTokenConverter accessTokenEnhancer;
-
-    public AuthServerConfig(OsioService osioService,
-                            PasswordEncoder passwordEncoder,
-                            AuthenticationManager authenticationManager,
-                            UserDetailsService userDetailsService,
-                            TokenStore tokenStore,
-                            ClientDetailsService clientDetailsService,
-                            JwtAccessTokenConverter accessTokenEnhancer)
-    {
-        this.osioService = osioService;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-        this.tokenStore = tokenStore;
-        this.clientDetailsService = clientDetailsService;
-        this.accessTokenEnhancer = accessTokenEnhancer;
+    @Bean
+    public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                .authorizationEndpoint(authorization -> authorization
+                        .consentPage("/page/consent"))
+                .oidc(Customizer.withDefaults());
+        http.exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/page/login"))
+        );
+        http.csrf(csrf -> csrf.disable());
+        return http.build();
     }
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) {
-        security.tokenKeyAccess("permitAll()")
-                .checkTokenAccess("permitAll()")
-                .passwordEncoder(passwordEncoder)
-                .allowFormAuthenticationForClients();
-    }
+    @Bean
+    public RegisteredClientRepository registeredClientRepository() {
+        RegisteredClient registeredClient = RegisteredClient.withId("my-client-id")
+                .clientId("my-client")
+                .clientSecret("{noop}my-secret")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .redirectUri("http://osio-api-dev.lgfei.com/login/oauth2/code/my-client")
+                .scope(OidcScopes.OPENID)
+                .scope("profile")
+                .clientSettings(ClientSettings.builder()
+                        .requireAuthorizationConsent(true)
+                        .build())
+                .build();
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory()
-                .withClient("osio-client-id")
-                .secret(passwordEncoder.encode("osio-client-secret"))
-                .resourceIds("order")
-                .authorizedGrantTypes("authorization_code", "password", "client_credentials", "implicit", "refresh_token")
-                .scopes("all")
-                .autoApprove(false)
-                .redirectUris(osioService.getBaseUrl() + "/home");
-    }
-
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager)
-                .tokenServices(tokenServices())
-                .userDetailsService(userDetailsService)
-                .authorizationCodeServices(authorizationCodeServices())
-                .allowedTokenEndpointRequestMethods(HttpMethod.POST)
-                .pathMapping("/oauth/confirm_access","/public/confirm_access")
-        ;
-    }
-
-    AuthorizationServerTokenServices tokenServices() {
-        DefaultTokenServices tokenServices = new DefaultTokenServices();
-        tokenServices.setClientDetailsService(clientDetailsService);
-        tokenServices.setTokenStore(tokenStore);
-        tokenServices.setTokenEnhancer(accessTokenEnhancer);
-        tokenServices.setSupportRefreshToken(true);
-        return tokenServices;
-    }
-
-    AuthorizationCodeServices authorizationCodeServices() {
-        return new InMemoryAuthorizationCodeServices();
+        return new InMemoryRegisteredClientRepository(registeredClient);
     }
 }
+
