@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="osio-register" />
+        <module name="osio-auth" />
+        <module name="osio-admin" />
+        <module name="osio-starter-core" />
+        <module name="osio-file" />
+        <module name="osio-gateway" />
+        <module name="osio-iam" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="osio-admin" options="-parameters" />
+      <module name="osio-auth" options="-parameters" />
+      <module name="osio-file" options="-parameters" />
+      <module name="osio-gateway" options="-parameters" />
+      <module name="osio-iam" options="-parameters" />
+      <module name="osio-register" options="-parameters" />
+      <module name="osio-service" options="-parameters" />
+      <module name="osio-starter-core" options="-parameters" />
+      <module name="osio-starter-parent" options="-parameters" />
+    </option>
+  </component>
+</project>

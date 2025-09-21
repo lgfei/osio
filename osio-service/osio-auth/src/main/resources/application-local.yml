@@ -7,4 +7,7 @@ logging:
     org:
       springframework:
         web: warn
-        security: debug
+        security: trace
+        ldap: trace
+        security.authentication: trace
+        security.ldap: trace

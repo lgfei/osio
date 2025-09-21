@@ -4,7 +4,7 @@ import com.lgfei.osio.starter.core.service.OsioService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -71,7 +71,7 @@ public class PageController {
         }
         String code = request.getParameter("code");
         log.info("code:{}", code);
-        User principal  = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetails principal  = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.info("principal:{}",principal);
         modelAndView.addObject("username", principal.getUsername());
         modelAndView.setViewName("home");
